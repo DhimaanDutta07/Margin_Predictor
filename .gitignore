@@ -1,0 +1,3 @@
+artifacts/model/model.pkl
+artifacts/shap/summary.png
+artifacts/monitoring/evidently_report.html

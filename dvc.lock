@@ -1,0 +1,40 @@
+schema: '2.0'
+stages:
+  clean:
+    cmd: python -c "import pandas as pd; from src.data.clean import DataCleaner;
+      df=pd.read_csv('data/raw/delivery_dual_task_clean.csv'); 
+      df=DataCleaner().clean(df); df.to_csv('data/processed/cleaned.csv', 
+      index=False)"
+    deps:
+    - path: data/raw/delivery_dual_task_clean.csv
+      hash: md5
+      md5: e1b48d0c0bf04fd77546e94f36214eee
+      size: 625277
+    - path: src/data/clean.py
+      hash: md5
+      md5: ae657b96083c788c732e930de5699d60
+      size: 442
+    outs:
+    - path: data/processed/cleaned.csv
+      hash: md5
+      md5: e597073ac1f7807b5e9e7f28ba20b8a0
+      size: 589269
+  features:
+    cmd: python -c "import pandas as pd; from src.features.build import 
+      FeatureBuilder; df=pd.read_csv('data/processed/cleaned.csv'); 
+      df=FeatureBuilder().build(df); df.to_csv('data/processed/featured.csv', 
+      index=False)"
+    deps:
+    - path: data/processed/cleaned.csv
+      hash: md5
+      md5: e597073ac1f7807b5e9e7f28ba20b8a0
+      size: 589269
+    - path: src/features/build.py
+      hash: md5
+      md5: b9fab1ee0cad9314b85879829e1259cc
+      size: 768
+    outs:
+    - path: data/processed/featured.csv
+      hash: md5
+      md5: ec552cfbf9a48a58fb5e88b823fd215f
+      size: 912371

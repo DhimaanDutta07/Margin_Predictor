@@ -1,0 +1,39 @@
+stages:
+  clean:
+    cmd: python -c "import pandas as pd; from src.data.clean import DataCleaner; df=pd.read_csv('data/raw/delivery_dual_task_clean.csv'); df=DataCleaner().clean(df); df.to_csv('data/processed/cleaned.csv', index=False)"
+    deps:
+      - src/data/clean.py
+      - data/raw/delivery_dual_task_clean.csv
+    outs:
+      - data/processed/cleaned.csv
+
+  features:
+    cmd: python -c "import pandas as pd; from src.features.build import FeatureBuilder; df=pd.read_csv('data/processed/cleaned.csv'); df=FeatureBuilder().build(df); df.to_csv('data/processed/featured.csv', index=False)"
+    deps:
+      - src/features/build.py
+      - data/processed/cleaned.csv
+    outs:
+      - data/processed/featured.csv
+
+  train:
+    cmd: python main.py
+    deps:
+      - main.py
+      - src/core/config.py
+      - src/data/ingest.py
+      - src/data/clean.py
+      - src/data/split.py
+      - src/features/build.py
+      - src/model/trainer.py
+      - src/model/models.py
+      - src/model/preprocessor.py
+      - src/model/evaluate.py
+      - src/model/tune.py
+      - src/explain/shap_report.py
+      - src/monitoring/evidently_report.py
+      - src/storage/s3_store.py
+      - data/processed/featured.csv
+    outs:
+      - artifacts/model/model.pkl
+      - artifacts/shap/summary.png
+      - artifacts/monitoring/evidently_report.html

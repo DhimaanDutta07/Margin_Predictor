@@ -27,7 +27,7 @@
 <body>
   <div class="wrap">
     <h1>Delivery Margin Predictor</h1>
-    <p>Edit values → click Predict. Backend: <code>http://localhost:5000/predict</code></p>
+    <p>Edit values → click Predict</p>
 
     <div class="card">
       <div class="grid" id="formGrid"></div>
@@ -42,53 +42,50 @@
   </div>
 
 <script>
-  const API_URL = "http://localhost:5000/predict";
+  const API_URL = "http://127.0.0.1:5000/predict";
 
-  // clean keys (backend maps to discount% and delivery_fee%)
   const defaults = {
-    age: 22,
-    city_tier: 2,
-    device: "android",
-    membership: "basic",
-    cuisine: "indian",
-    weather: "clear",
-    day_of_week: "mon",
-    hour: 20,
+    age: 21,
+    city_tier: "T3",
+    device: "web",
+    membership: "none",
+    cuisine: "italian",
+    weather: "hot",
+    day_of_week: 0,
+    hour: 22,
     is_weekend: 0,
-
-    distance_km: 4.2,
+    distance_km: 5.72,
     prior_orders_90d: 12,
-    avg_basket_90d: 22.5,
-    rating_avg: 4.3,
+    avg_basket_90d: 18.09,
+    rating_avg: 4.2,
     support_tickets_30d: 0,
-
     promo_type: "none",
-    delivery_fee: 1.5,
-    eta_minutes: 32,
-
-    basket_value: 24.0,
-    discount_amount: 2.0,
-    order_total: 23.5,
-
-    net_margin_usd: 0,
+    delivery_fee: 4.99,
+    eta_minutes: 45.5,
+    basket_value: 21.07,
+    discount_amount: 0.0,
+    order_total: 26.06,
     complaint_within_48h: 0,
-
-    discount_percent: 0.08,
-    amount_prior_discount: 26.0,
-    delivery_fee_percent: 0.06,
-    avg_order_total_90d: 24.2
+    "discount%": 0.0,
+    amount_prior_discount: 26.06,
+    "delivery_fee%": 19.14,
+    avg_order_total_90d: 18.09
   };
 
   const selectOptions = {
-    device: ["android","ios","web"],
-    membership: ["basic","pro","vip"],
-    cuisine: ["indian","pizza","chinese","burger","dessert"],
-    weather: ["clear","rain","cloudy","fog","storm"],
-    day_of_week: ["mon","tue","wed","thu","fri","sat","sun"],
+    city_tier: ["T1","T2","T3"],
+    device: ["android","web","ios"],
+    membership: ["none","plus"],
+    weather: ["clear","hot","rain"],
     promo_type: ["none","coupon","bogo","free_delivery","festival"]
   };
 
-  const numericFields = new Set(Object.keys(defaults).filter(k => typeof defaults[k] === "number"));
+  const numericFields = new Set([
+    "age","day_of_week","hour","is_weekend","distance_km","prior_orders_90d",
+    "avg_basket_90d","rating_avg","support_tickets_30d","delivery_fee","eta_minutes",
+    "basket_value","discount_amount","order_total","complaint_within_48h",
+    "discount%","amount_prior_discount","delivery_fee%","avg_order_total_90d"
+  ]);
 
   const grid = document.getElementById("formGrid");
   const out = document.getElementById("out");
@@ -139,22 +136,41 @@
     return data;
   }
 
+  async function safeReadResponse(res){
+    const text = await res.text();
+    try{
+      return { ok: res.ok, status: res.status, json: JSON.parse(text), raw: text };
+    }catch{
+      return { ok: res.ok, status: res.status, json: null, raw: text };
+    }
+  }
+
   document.getElementById("predictBtn").addEventListener("click", async (e)=>{
     e.preventDefault();
     out.textContent = "Predicting...";
 
     try{
       const payload = getPayload();
+
       const res = await fetch(API_URL, {
         method: "POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify(payload)
       });
 
-      const json = await res.json();
-      out.textContent = JSON.stringify(json, null, 2);
+      const r = await safeReadResponse(res);
+
+      if (!r.ok){
+        out.textContent =
+          "HTTP ERROR " + r.status + "\n\n" +
+          (r.json ? JSON.stringify(r.json, null, 2) : r.raw);
+        return;
+      }
+
+      out.textContent = JSON.stringify(r.json, null, 2);
+
     }catch(err){
-      out.textContent = "Error: " + err.message;
+      out.textContent = "FETCH ERROR:\n\n" + err.message;
     }
   });
 
