@@ -1,0 +1,9 @@
+[core]
+    autostage = true
+    remote = localstack
+['remote "localstack"']
+    url = s3://ml-artifacts/dvc
+    endpointurl = http://localhost:4566
+    access_key_id = test
+    secret_access_key = test
+    region = us-east-1

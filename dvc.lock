@@ -38,3 +38,79 @@ stages:
       hash: md5
       md5: ec552cfbf9a48a58fb5e88b823fd215f
       size: 912371
+  train:
+    cmd: python main.py
+    deps:
+    - path: data/processed/featured.csv
+      hash: md5
+      md5: ec552cfbf9a48a58fb5e88b823fd215f
+      size: 912371
+    - path: main.py
+      hash: md5
+      md5: db76bcf4909c6da08793a2f67b290000
+      size: 1853
+    - path: src/core/config.py
+      hash: md5
+      md5: 017d180683d47ee56dde1a1804b06dd8
+      size: 408
+    - path: src/data/clean.py
+      hash: md5
+      md5: ae657b96083c788c732e930de5699d60
+      size: 442
+    - path: src/data/ingest.py
+      hash: md5
+      md5: eaf20a6c48350275827accf3f1901f93
+      size: 262
+    - path: src/data/split.py
+      hash: md5
+      md5: d6f45f1f4606cb23760d6f2bc18853e0
+      size: 878
+    - path: src/explain/shap_report.py
+      hash: md5
+      md5: ece192485753782e6b615c172773ca62
+      size: 842
+    - path: src/features/build.py
+      hash: md5
+      md5: b9fab1ee0cad9314b85879829e1259cc
+      size: 768
+    - path: src/model/evaluate.py
+      hash: md5
+      md5: c2d9de2a6c1e0a948a67ffe22e75535b
+      size: 461
+    - path: src/model/models.py
+      hash: md5
+      md5: 2a06c4e8bca91f3b2a08845097c4aba2
+      size: 904
+    - path: src/model/preprocessor.py
+      hash: md5
+      md5: bd8c58b9e611395d83f2091ca429a70f
+      size: 2362
+    - path: src/model/trainer.py
+      hash: md5
+      md5: 4c63ebb44970d59f465c81cac240eb7a
+      size: 1538
+    - path: src/model/tune.py
+      hash: md5
+      md5: ef9a12b2492059f4eca33e8262b50120
+      size: 2244
+    - path: src/monitoring/evidently_report.py
+      hash: md5
+      md5: 5ae7d9228fb3374d77664dde02ebce92
+      size: 753
+    - path: src/storage/s3_store.py
+      hash: md5
+      md5: 94909263526d94099615b88f9eb1486e
+      size: 684
+    outs:
+    - path: artifacts/model/model.pkl
+      hash: md5
+      md5: 466437931dedbd499e6d0314d4a62559
+      size: 1867776
+    - path: artifacts/monitoring/evidently_report.html
+      hash: md5
+      md5: be157534e67f6056570e5e719ea2abef
+      size: 4872134
+    - path: artifacts/shap/summary.png
+      hash: md5
+      md5: 169766b8aea534bfb742ff1e3679d54c
+      size: 293147
