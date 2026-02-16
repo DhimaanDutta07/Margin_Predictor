@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Delivery Margin Predictor</title>
+  <style>
+    :root{--bg:#0b1020;--card:#121a33;--text:#eaf0ff;--muted:#9aa7c7;--stroke:rgba(255,255,255,.12);--accent:#3b82f6}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Arial}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    h1{margin:0 0 8px;font-size:22px}
+    p{margin:0 0 18px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .card{background:var(--card);border:1px solid var(--stroke);border-radius:14px;padding:16px}
+    label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+    input,select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--stroke);background:#0e1530;color:var(--text);outline:none}
+    input:focus,select:focus{border-color:var(--accent)}
+    .actions{display:flex;gap:12px;align-items:center;margin-top:14px}
+    button{padding:10px 14px;border:0;border-radius:12px;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+    button.secondary{background:#243055}
+    pre{margin-top:14px;background:#0e1530;border:1px solid var(--stroke);border-radius:14px;padding:14px;overflow:auto;color:var(--text)}
+    @media (max-width: 900px){ .grid{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 620px){ .grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Delivery Margin Predictor</h1>
+    <p>Edit values → click Predict. Backend: <code>http://localhost:5000/predict</code></p>
+
+    <div class="card">
+      <div class="grid" id="formGrid"></div>
+
+      <div class="actions">
+        <button id="predictBtn">Predict</button>
+        <button class="secondary" id="resetBtn" type="button">Reset defaults</button>
+      </div>
+
+      <pre id="out">{}</pre>
+    </div>
+  </div>
+
+<script>
+  const API_URL = "http://localhost:5000/predict";
+
+  // clean keys (backend maps to discount% and delivery_fee%)
+  const defaults = {
+    age: 22,
+    city_tier: 2,
+    device: "android",
+    membership: "basic",
+    cuisine: "indian",
+    weather: "clear",
+    day_of_week: "mon",
+    hour: 20,
+    is_weekend: 0,
+
+    distance_km: 4.2,
+    prior_orders_90d: 12,
+    avg_basket_90d: 22.5,
+    rating_avg: 4.3,
+    support_tickets_30d: 0,
+
+    promo_type: "none",
+    delivery_fee: 1.5,
+    eta_minutes: 32,
+
+    basket_value: 24.0,
+    discount_amount: 2.0,
+    order_total: 23.5,
+
+    net_margin_usd: 0,
+    complaint_within_48h: 0,
+
+    discount_percent: 0.08,
+    amount_prior_discount: 26.0,
+    delivery_fee_percent: 0.06,
+    avg_order_total_90d: 24.2
+  };
+
+  const selectOptions = {
+    device: ["android","ios","web"],
+    membership: ["basic","pro","vip"],
+    cuisine: ["indian","pizza","chinese","burger","dessert"],
+    weather: ["clear","rain","cloudy","fog","storm"],
+    day_of_week: ["mon","tue","wed","thu","fri","sat","sun"],
+    promo_type: ["none","coupon","bogo","free_delivery","festival"]
+  };
+
+  const numericFields = new Set(Object.keys(defaults).filter(k => typeof defaults[k] === "number"));
+
+  const grid = document.getElementById("formGrid");
+  const out = document.getElementById("out");
+
+  function makeField(key, value){
+    const wrap = document.createElement("div");
+
+    const label = document.createElement("label");
+    label.textContent = key;
+    wrap.appendChild(label);
+
+    if (selectOptions[key]){
+      const sel = document.createElement("select");
+      sel.name = key;
+      selectOptions[key].forEach(opt=>{
+        const o = document.createElement("option");
+        o.value = opt;
+        o.textContent = opt;
+        if (String(value) === opt) o.selected = true;
+        sel.appendChild(o);
+      });
+      wrap.appendChild(sel);
+      return wrap;
+    }
+
+    const input = document.createElement("input");
+    input.name = key;
+    input.value = value;
+    input.type = numericFields.has(key) ? "number" : "text";
+    input.step = (input.type === "number") ? "any" : undefined;
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  function renderForm(){
+    grid.innerHTML = "";
+    Object.entries(defaults).forEach(([k,v]) => grid.appendChild(makeField(k,v)));
+  }
+
+  function getPayload(){
+    const data = {};
+    grid.querySelectorAll("input,select").forEach(el=>{
+      const key = el.name;
+      let val = el.value;
+      if (numericFields.has(key)) val = (val === "" ? 0 : Number(val));
+      data[key] = val;
+    });
+    return data;
+  }
+
+  document.getElementById("predictBtn").addEventListener("click", async (e)=>{
+    e.preventDefault();
+    out.textContent = "Predicting...";
+
+    try{
+      const payload = getPayload();
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+      out.textContent = JSON.stringify(json, null, 2);
+    }catch(err){
+      out.textContent = "Error: " + err.message;
+    }
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    renderForm();
+    out.textContent = "{}";
+  });
+
+  renderForm();
+</script>
+</body>
+</html>

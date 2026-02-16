@@ -1,0 +1,14 @@
+artifact_uri: file:///C:/Users/dhima/OneDrive/Desktop/practice/mlruns/279228455327437777/e3695da6417e48999b48362df6939024/artifacts
+end_time: 1771238891342
+entry_point_name: ''
+experiment_id: '279228455327437777'
+lifecycle_stage: active
+run_id: e3695da6417e48999b48362df6939024
+run_name: regression
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1771238890803
+status: 3
+tags: []
+user_id: dhima
